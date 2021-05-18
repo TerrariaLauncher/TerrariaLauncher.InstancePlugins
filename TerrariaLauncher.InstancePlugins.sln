@@ -1,0 +1,43 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30611.23
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerrariaLauncher.TShockPlugins.InGameEconomy", "TerrariaLauncher.TShockPlugins.InGameEconomy\TerrariaLauncher.TShockPlugins.InGameEconomy.csproj", "{FFA30EB4-FF95-47AA-ACA2-2AAF63FEFFA4}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerrariaLauncher.TShockPlugins.TShockManagement", "TerrariaLauncher.TShockPlugins.TShockManagement\TerrariaLauncher.TShockPlugins.TShockManagement.csproj", "{2C8B889E-1D2B-4AEF-9BA4-CCCFB25C7A2E}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerrariaLauncher.Commons", "TerrariaLauncher.Commons\TerrariaLauncher.Commons.csproj", "{BA8242E3-4649-45B6-AAA2-D677EA151EB9}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerrariaLauncher.Commons.Base", "..\TerrariaLauncher.Commons.Base\TerrariaLauncher.Commons.Base.csproj", "{A8C0FFA3-4A6A-42C5-A3A7-4CBDF106E539}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Release|Any CPU = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{FFA30EB4-FF95-47AA-ACA2-2AAF63FEFFA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{FFA30EB4-FF95-47AA-ACA2-2AAF63FEFFA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{FFA30EB4-FF95-47AA-ACA2-2AAF63FEFFA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{FFA30EB4-FF95-47AA-ACA2-2AAF63FEFFA4}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C8B889E-1D2B-4AEF-9BA4-CCCFB25C7A2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C8B889E-1D2B-4AEF-9BA4-CCCFB25C7A2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C8B889E-1D2B-4AEF-9BA4-CCCFB25C7A2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C8B889E-1D2B-4AEF-9BA4-CCCFB25C7A2E}.Release|Any CPU.Build.0 = Release|Any CPU
+		{BA8242E3-4649-45B6-AAA2-D677EA151EB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{BA8242E3-4649-45B6-AAA2-D677EA151EB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{BA8242E3-4649-45B6-AAA2-D677EA151EB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{BA8242E3-4649-45B6-AAA2-D677EA151EB9}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A8C0FFA3-4A6A-42C5-A3A7-4CBDF106E539}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A8C0FFA3-4A6A-42C5-A3A7-4CBDF106E539}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A8C0FFA3-4A6A-42C5-A3A7-4CBDF106E539}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A8C0FFA3-4A6A-42C5-A3A7-4CBDF106E539}.Release|Any CPU.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(ExtensibilityGlobals) = postSolution
+		SolutionGuid = {502A5402-03BD-4D2C-B518-F79648DB3D00}
+	EndGlobalSection
+EndGlobal
