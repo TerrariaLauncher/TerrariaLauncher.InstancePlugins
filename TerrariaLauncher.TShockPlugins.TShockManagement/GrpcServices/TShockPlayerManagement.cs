@@ -14,36 +14,61 @@ namespace TerrariaLauncher.TShockPlugins.TShockManagement.GrpcServices
 {
     class TShockPlayerManagement : TerrariaLauncher.Protos.InstancePlugins.InstanceManagement.InstancePlayerManagement.InstancePlayerManagementBase
     {
-        private TShockAPI.TSPlayer GetPlayerByNameOrId(dynamic nameOrId)
+        private TShockAPI.TSPlayer GetPlayerByName(string name)
         {
-            List<TShockAPI.TSPlayer> matchedPlayers = TShockAPI.TSPlayer.FindByNameOrID(nameOrId);
-            if (matchedPlayers.Count < 1)
+            foreach (var player in TShockAPI.TShock.Players)
             {
-                throw new RpcException(new Status(StatusCode.NotFound, "Player was not found."));
+                if (player != null && player.Active && player.Name == name)
+                {
+                    return player;
+                }
             }
-            else if (matchedPlayers.Count > 1)
+            return null;
+        }
+
+        private TShockAPI.TSPlayer GetPlayerById(int id)
+        {
+            if (id > 0 && id < Terraria.Main.maxPlayers)
             {
-                throw new RpcException(new Status(StatusCode.InvalidArgument, "More than one matched players. Please provide identical player name."));
+                var player = TShockAPI.TShock.Players[id];
+                if (player != null && player.Active)
+                {
+                    return player;
+                }
             }
 
-            return matchedPlayers[0];
+            return null;
+        }
+
+        private TShockAPI.TSPlayer GetPlayerByUserName(string userName)
+        {
+            foreach (var player in TShockAPI.TShock.Players)
+            {
+                if (player != null && player.Active && player.Account != null && player.Account.Name == userName)
+                {
+                    return player;
+                }
+            }
+
+            return null;
         }
 
         public override Task<Player> GetPlayer(GetPlayerRequest request, ServerCallContext context)
         {
-            TShockAPI.TSPlayer player = null;
-            if (request.IdOrNameCase == GetPlayerRequest.IdOrNameOneofCase.Id)
+            TShockAPI.TSPlayer player;
+            switch (request.IdentityCase)
             {
-                player = GetPlayerByNameOrId(request.Id);
+                case GetPlayerRequest.IdentityOneofCase.Id:
+                    player = GetPlayerById(request.Id);
+                    break;
+                case GetPlayerRequest.IdentityOneofCase.Name:
+                    player = GetPlayerByName(request.Name);
+                    break;
+                default:
+                    throw new RpcException(new Status(StatusCode.InvalidArgument, "Id or name is not provided."));
             }
-            else if (request.IdOrNameCase == GetPlayerRequest.IdOrNameOneofCase.Name)
-            {
-                player = GetPlayerByNameOrId(request.Name);
-            }
-            else
-            {
-                throw new RpcException(new Status(StatusCode.InvalidArgument, "Id or name is not provided."));
-            }
+
+            if (player is null) throw new RpcException(new Status(StatusCode.NotFound, "Player was not found."));
 
             return Task.FromResult(new Player()
             {
@@ -261,16 +286,20 @@ namespace TerrariaLauncher.TShockPlugins.TShockManagement.GrpcServices
         public override Task<PlayerData> GetPlayerData(GetPlayerDataRequest request, ServerCallContext context)
         {
             TShockAPI.TSPlayer player;
-            switch (request.IdOrNameCase)
+            switch (request.IdentityCase)
             {
-                case GetPlayerDataRequest.IdOrNameOneofCase.Id:
-                    player = GetPlayerByNameOrId(request.Id);
+                case GetPlayerDataRequest.IdentityOneofCase.Id:
+                    player = GetPlayerById(request.Id);
                     break;
-                case GetPlayerDataRequest.IdOrNameOneofCase.Name:
-                    player = GetPlayerByNameOrId(request.Name);
+                case GetPlayerDataRequest.IdentityOneofCase.Name:
+                    player = GetPlayerByName(request.Name);
                     break;
                 default:
                     throw new RpcException(new Status(StatusCode.InvalidArgument, "Id or name is not provided."));
+            }
+            if (player is null)
+            {
+                throw new RpcException(new Status(StatusCode.NotFound, "Player was not found."));
             }
 
             var payload = Create_PlayerData(player);
@@ -320,16 +349,24 @@ namespace TerrariaLauncher.TShockPlugins.TShockManagement.GrpcServices
         public override Task<KickPlayerResponse> KickPlayer(KickPlayerRequest request, ServerCallContext context)
         {
             TShockAPI.TSPlayer player;
-            switch (request.IdOrNameCase)
+            switch (request.IdentityCase)
             {
-                case KickPlayerRequest.IdOrNameOneofCase.Id:
-                    player = GetPlayerByNameOrId(request.Id);
+                case KickPlayerRequest.IdentityOneofCase.Id:
+                    player = GetPlayerById(request.Id);
                     break;
-                case KickPlayerRequest.IdOrNameOneofCase.Name:
-                    player = GetPlayerByNameOrId(request.Name);
+                case KickPlayerRequest.IdentityOneofCase.Name:
+                    player = GetPlayerByName(request.Name);
+                    break;
+                case KickPlayerRequest.IdentityOneofCase.UserName:
+                    player = GetPlayerByUserName(request.UserName);
                     break;
                 default:
                     throw new RpcException(new Status(StatusCode.InvalidArgument, "Id or name is not provided."));
+            }
+
+            if (player is null)
+            {
+                throw new RpcException(new Status(StatusCode.NotFound, "Player was not found."));
             }
 
             var kickResult = player.Kick(
@@ -374,17 +411,19 @@ namespace TerrariaLauncher.TShockPlugins.TShockManagement.GrpcServices
         public override Task<KillPlayerReponse> KillPlayer(KillPlayerRequest request, ServerCallContext context)
         {
             TShockAPI.TSPlayer player;
-            switch (request.IdOrNameCase)
+            switch (request.IdentityCase)
             {
-                case KillPlayerRequest.IdOrNameOneofCase.Id:
-                    player = GetPlayerByNameOrId(request.Id);
+                case KillPlayerRequest.IdentityOneofCase.Id:
+                    player = GetPlayerById(request.Id);
                     break;
-                case KillPlayerRequest.IdOrNameOneofCase.Name:
-                    player = GetPlayerByNameOrId(request.Name);
+                case KillPlayerRequest.IdentityOneofCase.Name:
+                    player = GetPlayerByName(request.Name);
                     break;
                 default:
                     throw new RpcException(new Status(StatusCode.InvalidArgument, "Id or name is not provided."));
             }
+
+            if (player is null) throw new RpcException(new Status(StatusCode.NotFound, "Player was not found."));
 
             player.KillPlayer();
             if (!request.Silent)

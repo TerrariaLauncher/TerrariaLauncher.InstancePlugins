@@ -6,6 +6,7 @@ using System.Text;
 using System.Threading.Tasks;
 using TerrariaLauncher.Protos.CommonMessages;
 using TerrariaLauncher.Protos.InstancePlugins.InstanceManagement;
+using static Google.Protobuf.MessageExtensions;
 
 namespace TerrariaLauncher.TShockPlugins.TShockManagement.GrpcServices
 {
@@ -14,9 +15,21 @@ namespace TerrariaLauncher.TShockPlugins.TShockManagement.GrpcServices
         public override Task<InstanceUser> CreateUser(CreateUserRequest request, ServerCallContext context)
         {
             var groupName = request.Group;
-            if (String.IsNullOrWhiteSpace( groupName))
+            if (String.IsNullOrWhiteSpace(groupName))
             {
-                groupName = TShockAPI.Group.DefaultGroup.Name;
+                groupName = TShockAPI.TShock.Config.Settings.DefaultRegistrationGroupName;
+            }
+
+            // Currently, TShock API can not throw an right exception for duplicated user name (in spite of they already have that exception class).
+            if (TShockAPI.TShock.UserAccounts.GetUserAccountByName(request.Name) != null)
+            {
+                var (meta, status) = CreateInvalidArgumentMetadata(new List<(string name, string code, string message)> {
+                (
+                    nameof(request.Name),
+                    "DUPLICATED",
+                    "User is existed."
+                )}, StatusCode.AlreadyExists);
+                throw new RpcException(status, meta);
             }
 
             var user = new TShockAPI.DB.UserAccount()
@@ -24,7 +37,21 @@ namespace TerrariaLauncher.TShockPlugins.TShockManagement.GrpcServices
                 Name = request.Name,
                 Group = groupName
             };
-            user.CreateBCryptHash(request.Password);
+            try
+            {
+                user.CreateBCryptHash(request.Password);
+            }
+            catch (ArgumentOutOfRangeException)
+            {
+                var (meta, status) = CreateInvalidArgumentMetadata(new List<(string name, string code, string message)> {
+                (
+                    nameof(request.Password),
+                    "SHORT",
+                    $"Password length is too short. The length must be larger than {TShockAPI.TShock.Config.Settings.MinimumPasswordLength}."
+                )});
+                throw new RpcException(status, meta);
+            }
+
             try
             {
                 TShockAPI.TShock.UserAccounts.AddUserAccount(user);
@@ -130,7 +157,27 @@ namespace TerrariaLauncher.TShockPlugins.TShockManagement.GrpcServices
                     }
                     break;
                 case UpdateUserRequest.UpdateFieldOneofCase.Password:
-                    TShockAPI.TShock.UserAccounts.SetUserAccountPassword(user, request.Password);
+                    try
+                    {
+                        if (request.Password.Length < TShockAPI.TShock.Config.Settings.MinimumPasswordLength)
+                        {
+                            throw new ArgumentOutOfRangeException();
+                        }
+                        TShockAPI.TShock.UserAccounts.SetUserAccountPassword(user, request.Password);
+                    }
+                    catch (ArgumentOutOfRangeException)
+                    {
+                        var (meta, status) = CreateInvalidArgumentMetadata(new List<(string name, string code, string message)> {
+                        (
+                            nameof(request.Password),
+                            "SHORT",
+                            $"Password length is too short. The length must be larger than {TShockAPI.TShock.Config.Settings.MinimumPasswordLength}."
+                        )});
+                        throw new RpcException(status, meta);
+                    }
+                    break;
+                case UpdateUserRequest.UpdateFieldOneofCase.UUID:
+                    TShockAPI.TShock.UserAccounts.SetUserAccountUUID(user, request.UUID);
                     break;
                 default:
                     throw new RpcException(new Status(StatusCode.InvalidArgument, "Update field "));
@@ -143,6 +190,28 @@ namespace TerrariaLauncher.TShockPlugins.TShockManagement.GrpcServices
                 Name = user.Name,
                 Group = user.Group
             });
+        }
+
+        private static (Metadata, Status) CreateInvalidArgumentMetadata(List<(string name, string code, string message)> errors, StatusCode specifiedCode = StatusCode.InvalidArgument)
+        {
+            var details = new StringBuilder();
+
+            var invalidArguments = new InvalidArguments();
+            foreach (var error in errors)
+            {
+                invalidArguments.Entries.Add(new InvalidArguments.Types.Entry()
+                {
+                    Name = error.name,
+                    Code = error.code,
+                    Message = error.message
+                });
+                details.AppendLine(error.message);
+            }
+            var meta = new Metadata() {
+                    new Metadata.Entry("invalid-arguments" + Metadata.BinaryHeaderSuffix, invalidArguments.ToByteArray())
+                };
+            var status = new Status(specifiedCode, details.ToString());
+            return (meta, status);
         }
     }
 }
