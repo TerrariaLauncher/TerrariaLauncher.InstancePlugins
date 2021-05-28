@@ -14,6 +14,7 @@ namespace TerrariaLauncher.TShockPlugins.InGameEconomy
     {
         public InGameEconomy(Terraria.Main game) : base(game)
         {
+
         }
 
         public override string Name => "In-Game Economy";
@@ -25,68 +26,47 @@ namespace TerrariaLauncher.TShockPlugins.InGameEconomy
         private CancellationTokenSource cancellationTokenSource;
         private CancellationToken cancellationToken;
 
-        private Dictionary<int, BatchBlock<NpcStrikeEventDetails>> npcStrikeEventBatchs;
-        private ActionBlock<NpcStrikeEventDetails[]> npcStrikeBatchHandler;
+        private ConcurrentDictionary<Terraria.NPC, ConcurrentBag<NpcStrike>> npcStrikesBackLog;
+        private HashSet<Terraria.NPC> currentNpcs;
 
-        private async Task HandleNpcStrikeBatch(NpcStrikeEventDetails[] batch)
+        private BufferBlock<(Terraria.NPC npc, NpcStrike[] strikes)> npcStrikesBuffer;
+        private ActionBlock<(Terraria.NPC npc, NpcStrike[] strikes)> npcStrikesHandler;
+
+        private Task HandleNpcStrikes((Terraria.NPC Npc, NpcStrike[] strikes) args)
         {
-            if (batch.Length <= 0) return;
+            var (npc, strikes) = args;
 
-            var groupingStrikesByNpcObject = batch.GroupBy(
-                (strike) => strike.Npc.NpcObject,
-                (strike) => strike,
-                (key, group) => new { NpcObject = key, Strikes = group },
-                new TerrariaNpcEqualityComparer()
-            );
+            var damageDistribution = new Dictionary<int, decimal>();
 
-            if (groupingStrikesByNpcObject.Count() > 1)
+            foreach (var strike in strikes)
             {
-                // "There are two NPC types in a batch!"
-                // For example, when strike "Eater of Worlds". Need a investigation.
-            }
+                if (strike.User is null) continue;
 
-            foreach (var group in groupingStrikesByNpcObject)
-            {
-                Dictionary<int, double> damagesByUser = new Dictionary<int, double>();
-                foreach (var strike in group.Strikes)
+                if (!damageDistribution.ContainsKey(strike.User.ID))
                 {
-                    if (!strike.Player.IsLoggedIn)
-                        continue;
-                    if (!strike.Npc.Active)
-                        continue;
-
-                    if (!damagesByUser.ContainsKey(strike.Player.User.Id))
-                    {
-                        damagesByUser[strike.Player.User.Id] = 0.0d;
-                    }
-
-                    double damage = 0.0d;
-                    if (strike.Npc.CurrentLife > 0)
-                    {
-                        damage = (strike.Critical ? 2 : 1) * Terraria.Main.CalculateDamageNPCsTake(strike.Damage, strike.Npc.CurrentDefense);
-                        if (damage > strike.Npc.CurrentLife)
-                        {
-                            damage = strike.Npc.CurrentLife;
-                        }
-                    }
-                    else
-                    {
-                        damage = 0;
-                    }
-                    damagesByUser[strike.Player.User.Id] += damage;
+                    damageDistribution[strike.User.ID] = 0.0M;
                 }
 
-                foreach (var item in damagesByUser)
+                decimal strikeDamage = 0.0M;
+                if (strike.CurrentLife > 0)
                 {
-                    var userId = item.Key;
-                    var damages = item.Value;
-
-                    var who = TShockAPI.TShock.Players.FirstOrDefault((player) => player != null && player.IsLoggedIn && player.Account?.ID == userId);
-                    who?.SendInfoMessage($"You gained {damages} damage(s) from {group.NpcObject.FullName}");
+                    strikeDamage = (strike.Critical ? 2.0M : 1.0M) * Convert.ToDecimal(Terraria.Main.CalculateDamageNPCsTake(strike.Damage, strike.CurrentDefense));
+                    if (strikeDamage > strike.CurrentLife)
+                    {
+                        strikeDamage = strike.CurrentLife;
+                    }
                 }
+                damageDistribution[strike.User.ID] += strikeDamage;
             }
 
-            await Task.CompletedTask;
+            foreach (var userId in damageDistribution.Keys)
+            {
+                var damage = damageDistribution[userId];
+                var foundPlayer = TShockAPI.TShock.Players.FirstOrDefault((player) => player != null && player.IsLoggedIn && player.Account?.ID == userId);
+                foundPlayer?.SendInfoMessage($"You gained {damage} damage(s) from {npc.FullName}.");
+            }
+
+            return Task.CompletedTask;
         }
 
         public override void Initialize()
@@ -94,14 +74,15 @@ namespace TerrariaLauncher.TShockPlugins.InGameEconomy
             this.cancellationTokenSource = new CancellationTokenSource();
             this.cancellationToken = this.cancellationTokenSource.Token;
 
-            this.npcStrikeBatchHandler = new ActionBlock<NpcStrikeEventDetails[]>(this.HandleNpcStrikeBatch);
-            this.npcStrikeEventBatchs = new Dictionary<int, BatchBlock<NpcStrikeEventDetails>>();
-            for (int i = 0; i < Terraria.Main.npc.Length; ++i)
+            this.npcStrikesBackLog = new ConcurrentDictionary<Terraria.NPC, ConcurrentBag<NpcStrike>>();
+            this.currentNpcs = new HashSet<Terraria.NPC>();
+
+            this.npcStrikesBuffer = new BufferBlock<(Terraria.NPC npc, NpcStrike[] strikes)>(new DataflowBlockOptions()
             {
-                var batch = new BatchBlock<NpcStrikeEventDetails>(1024);
-                batch.LinkTo(this.npcStrikeBatchHandler);
-                this.npcStrikeEventBatchs.Add(i, batch);
-            }
+                CancellationToken = this.cancellationToken
+            });
+            this.npcStrikesHandler = new ActionBlock<(Terraria.NPC npc, NpcStrike[] strikes)>(HandleNpcStrikes);
+            this.npcStrikesBuffer.LinkTo(npcStrikesHandler);
 
             TerrariaApi.Server.ServerApi.Hooks.NetSendData.Register(this, this.HandleNetSendData);
             TerrariaApi.Server.ServerApi.Hooks.NetSendBytes.Register(this, this.HandleNetSendBytes);
@@ -152,10 +133,26 @@ namespace TerrariaLauncher.TShockPlugins.InGameEconomy
                 // case PacketTypes.NpcStrike: Don't known specfied player who damaged the NPC. You 
                 case PacketTypes.NpcUpdate:
                     var npcId = args.number;
+                    var npc = Terraria.Main.npc[npcId];
                     // TShockAPI.TShock.Log.ConsoleInfo("{0} {1} {2} {3} {4} {5} {6}", args.MsgId, args.number, args.ignoreClient, args.remoteClient, Terraria.Main.npc[args.number].FullName, Terraria.Main.npc[args.number].life, Terraria.Main.npc[args.number].active);
-                    if (!Terraria.Main.npc[npcId].active)
+                    if (npc.active)
                     {
-                        this.npcStrikeEventBatchs[npcId].TriggerBatch();
+                        var notPresent = this.currentNpcs.Add(npc);
+                        if (notPresent)
+                        {
+                            this.npcStrikesBackLog.TryAdd(npc, new ConcurrentBag<NpcStrike>());
+                        }
+                    }
+                    else
+                    {
+                        this.currentNpcs.Remove(npc);
+                        if (this.npcStrikesBackLog.TryRemove(npc, out var strikes))
+                        {
+                            if (!this.npcStrikesBuffer.Post((npc, strikes.ToArray())))
+                            {
+                                TShockAPI.TShock.Log.ConsoleError("Could not post NPC strikes into buffer.");
+                            }
+                        }
                     }
                     break;
             }
@@ -196,38 +193,25 @@ namespace TerrariaLauncher.TShockPlugins.InGameEconomy
                         var npc = Terraria.Main.npc[npcId];
                         var player = TShockAPI.TShock.Players[args.Msg.whoAmI];
 
-                        this.npcStrikeEventBatchs[npcId].Post(new NpcStrikeEventDetails()
+                        if (npc.active)
                         {
-                            Damage = damage,
-                            HitDirection = hitDirection,
-                            Critical = critical,
-                            KnockBack = knockBack,
-                            Npc = new NpcStrikeEventDetails.Types.Npc()
+                            if (this.npcStrikesBackLog.TryGetValue(npc, out var strikes))
                             {
-                                Id = npcId,
-                                Type = npc.type,
-                                CurrentLife = npc.life,
-                                CurrentDefense = npc.defense,
-                                Active = npc.active,
-                                NpcObject = npc
-                            },
-                            Player = new NpcStrikeEventDetails.Types.Player()
-                            {
-                                Id = player.Index,
-                                Name = player.Name,
-                                IsLoggedIn = player.IsLoggedIn,
-                                TSPlayerObject = player,
-                                User = new NpcStrikeEventDetails.Types.Player.Types.User()
+                                strikes.Add(new NpcStrike()
                                 {
-                                    Id = player.Account?.ID ?? -1,
-                                    Name = player.Account?.Name ?? ""
-                                },
-                                Group = new NpcStrikeEventDetails.Types.Player.Types.Group()
-                                {
-                                    Name = player.Group?.Name ?? ""
-                                }
+                                    Damage = damage,
+                                    HitDirection = hitDirection,
+                                    Critical = critical,
+                                    KnockBack = knockBack,
+
+                                    CurrentLife = npc.life,
+                                    CurrentDefense = npc.defense,
+
+                                    Player = player,
+                                    User = player.Account
+                                });
                             }
-                        });
+                        }
                     }
                     break;
             }
@@ -250,7 +234,7 @@ namespace TerrariaLauncher.TShockPlugins.InGameEconomy
 
         private void HandleNpcLootDrop(TerrariaApi.Server.NpcLootDropEventArgs args)
         {
-            
+
         }
 
         private void HandlePlayerDamage(object sender, TShockAPI.GetDataHandlers.PlayerDamageEventArgs args)
@@ -270,13 +254,16 @@ namespace TerrariaLauncher.TShockPlugins.InGameEconomy
                 TerrariaApi.Server.ServerApi.Hooks.NpcStrike.Deregister(this, this.HandleNpcStrike);
                 TerrariaApi.Server.ServerApi.Hooks.NpcKilled.Deregister(this, this.HandleNpcKilled);
                 TerrariaApi.Server.ServerApi.Hooks.NpcLootDrop.Deregister(this, this.HandleNpcLootDrop);
+
+                this.cancellationTokenSource.Cancel();
+                this.cancellationTokenSource.Dispose();
             }
 
             base.Dispose(disposing);
         }
     }
 
-    public class NpcStrikeEventDetails
+    public class NpcStrike
     {
         public bool Critical { get; set; }
         public int Damage { get; set; }
@@ -284,58 +271,10 @@ namespace TerrariaLauncher.TShockPlugins.InGameEconomy
         public int HitDirection { get; set; }
         public bool NoEffect { get; set; }
 
-        public Types.Player Player { get; set; }
+        public int CurrentLife { get; set; }
+        public int CurrentDefense { get; set; }
 
-        public Types.Npc Npc { get; set; }
-
-        public class Types
-        {
-            public class Player
-            {
-                public int Id { get; set; }
-                public string Name { get; set; }
-                public bool IsLoggedIn { get; set; }
-                public TShockAPI.TSPlayer TSPlayerObject { get; set; }
-                public Types.User User { get; set; }
-                public Types.Group Group { get; set; }
-
-                public class Types
-                {
-                    public class User
-                    {
-                        public int Id { get; set; }
-                        public string Name { get; set; }
-                    }
-
-                    public class Group
-                    {
-                        public string Name { get; set; }
-                    }
-                }
-            }
-
-            public class Npc
-            {
-                public int Id { get; set; }
-                public int Type { get; set; }
-                public int CurrentLife { get; set; }
-                public int CurrentDefense { get; set; }
-                public bool Active { get; set; }
-                public Terraria.NPC NpcObject { get; set; }
-            }
-        }
-    }
-
-    public class TerrariaNpcEqualityComparer : IEqualityComparer<Terraria.NPC>
-    {
-        public bool Equals(Terraria.NPC x, Terraria.NPC y)
-        {
-            return Object.ReferenceEquals(x, y);
-        }
-
-        public int GetHashCode(Terraria.NPC obj)
-        {
-            return obj.GetHashCode();
-        }
+        public TShockAPI.TSPlayer Player { get; set; }
+        public TShockAPI.DB.UserAccount User { get; set; }
     }
 }
