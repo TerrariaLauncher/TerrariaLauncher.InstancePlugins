@@ -1,11 +1,9 @@
 ﻿using Grpc.Core;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
-using System.Threading.Tasks;
 
-namespace TerrariaLauncher.TShockPlugins.TShockManagement.GrpcExtensions
+namespace TerrariaLauncher.InstancePlugins.Commons.GrpcExtensions
 {
     public static class ServerCallContextExtensions
     {

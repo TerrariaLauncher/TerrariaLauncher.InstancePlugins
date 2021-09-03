@@ -1,0 +1,9 @@
+{
+  "profiles": {
+    "TerrariaLauncher.TShockPlugins.GameCoordinatorAgent": {
+      "commandName": "Executable",
+      "executablePath": "C:\\Developments\\GitHub\\TerrariaLauncher\\TShockDebug\\TerrariaServer.exe",
+      "workingDirectory": "C:\\Developments\\GitHub\\TerrariaLauncher\\TShockDebug\\"
+    }
+  }
+}

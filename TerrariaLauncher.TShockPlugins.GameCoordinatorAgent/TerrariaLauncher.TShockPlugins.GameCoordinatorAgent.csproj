@@ -1,0 +1,77 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <CopyLocalLockFileAssemblies>true</CopyLocalLockFileAssemblies>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <GenerateBindingRedirectsOutputType>true</GenerateBindingRedirectsOutputType>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DebugType>full</DebugType>
+    <DebugSymbols>true</DebugSymbols>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <PackageReference Include="Lib.Harmony" Version="2.1.1">
+      <NoWarn>NU1701</NoWarn>
+    </PackageReference>
+    <PackageReference Include="Google.Protobuf" Version="3.17.3" />
+    <PackageReference Include="Grpc" Version="2.39.1" />
+    <PackageReference Include="Grpc.Net.ClientFactory" Version="2.39.0" />
+    <PackageReference Include="Grpc.Tools" Version="2.39.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="Microsoft.Extensions.Hosting" Version="5.0.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <ProjectReference Include="..\..\TerrariaLauncher.Commons.Base\TerrariaLauncher.Commons.Base.csproj" />
+    <ProjectReference Include="..\..\TerrariaLauncher.Commons.EventBus\TerrariaLauncher.Commons.EventBusRabbitMQ\TerrariaLauncher.Commons.EventBusRabbitMQ.csproj" />
+    <ProjectReference Include="..\..\TerrariaLauncher.Commons.EventBus\TerrariaLauncher.Commons.EventBus\TerrariaLauncher.Commons.EventBus.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Reference Include="OTAPI">
+      <HintPath>..\..\TShockReferences\OTAPI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="TerrariaServer">
+      <HintPath>..\..\TShockReferences\TerrariaServer.exe</HintPath>
+      <Private>false</Private>
+    </Reference>
+    <Reference Include="TShockAPI">
+      <HintPath>..\..\TShockReferences\TShockAPI.dll</HintPath>
+      <Private>false</Private>
+    </Reference>
+  </ItemGroup>
+
+  <ItemGroup>
+    <Protobuf Include="..\..\TerrariaLauncher.Protos\*.proto" ProtoRoot="..\..\TerrariaLauncher.Protos" GrpcServices="None">
+      <Link>TerrariaLauncher.Protos\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\TerrariaLauncher.Protos\instance_plugins\game_coordinator_agent\**\*.proto" ProtoRoot="..\..\TerrariaLauncher.Protos" GrpcServices="Server">
+      <Link>TerrariaLauncher.Protos\instance_plugins\game_coordinator_agent\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Protobuf>
+    <Protobuf Include="..\..\TerrariaLauncher.Protos\services\game_coordinator\hub\**\*.proto" ProtoRoot="..\..\TerrariaLauncher.Protos" GrpcServices="Client">
+      <Link>TerrariaLauncher.Protos\services\game_coordinator\hub\%(RecursiveDir)%(Filename)%(Extension)</Link>
+    </Protobuf>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Remove="TerrariaLauncher.TShockPlugins.GameCoordinatorAgent.json" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="TerrariaLauncher.TShockPlugins.GameCoordinatorAgent.json">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <Target Name="PostBuild" AfterTargets="PostBuildEvent">
+    <Exec Command="robocopy $(TargetDir) $(SolutionDir)..\TShockDebug\ServerPlugins\ $(TargetName).*&#xD;&#xA;robocopy $(TargetDir) $(SolutionDir)..\TShockDebug\ /xf $(TargetName).*&#xD;&#xA;IF %2525errorlevel%2525 LEQ 8 EXIT 0&#xD;&#xA;" />
+  </Target>
+
+</Project>

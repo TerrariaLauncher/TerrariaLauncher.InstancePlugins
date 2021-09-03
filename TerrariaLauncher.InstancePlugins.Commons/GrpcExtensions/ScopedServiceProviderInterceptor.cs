@@ -3,11 +3,10 @@ using Grpc.Core.Interceptors;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 
-namespace TerrariaLauncher.TShockPlugins.TShockManagement.GrpcExtensions
+namespace TerrariaLauncher.InstancePlugins.Commons.GrpcExtensions
 {
     public class ScopedServiceProviderInterceptor : Interceptor
     {

@@ -3,13 +3,25 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 16
 VisualStudioVersion = 16.0.30611.23
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerrariaLauncher.TShockPlugins.InGameEconomy", "TerrariaLauncher.TShockPlugins.InGameEconomy\TerrariaLauncher.TShockPlugins.InGameEconomy.csproj", "{FFA30EB4-FF95-47AA-ACA2-2AAF63FEFFA4}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerrariaLauncher.TShockPlugins.TShockManagement", "TerrariaLauncher.TShockPlugins.TShockManagement\TerrariaLauncher.TShockPlugins.TShockManagement.csproj", "{2C8B889E-1D2B-4AEF-9BA4-CCCFB25C7A2E}"
-EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerrariaLauncher.Commons", "TerrariaLauncher.Commons\TerrariaLauncher.Commons.csproj", "{BA8242E3-4649-45B6-AAA2-D677EA151EB9}"
-EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerrariaLauncher.Commons.Base", "..\TerrariaLauncher.Commons.Base\TerrariaLauncher.Commons.Base.csproj", "{A8C0FFA3-4A6A-42C5-A3A7-4CBDF106E539}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Notes", "Notes", "{D52F303C-106F-4A4F-98CB-49162DA7AB37}"
+	ProjectSection(SolutionItems) = preProject
+		Database Centralization.md = Database Centralization.md
+		Terraria Fields.md = Terraria Fields.md
+	EndProjectSection
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerrariaLauncher.Commons.EventBus", "..\TerrariaLauncher.Commons.EventBus\TerrariaLauncher.Commons.EventBus\TerrariaLauncher.Commons.EventBus.csproj", "{2C2EACD5-853A-4922-91CA-DAC9D415FC5B}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerrariaLauncher.Commons.EventBusRabbitMQ", "..\TerrariaLauncher.Commons.EventBus\TerrariaLauncher.Commons.EventBusRabbitMQ\TerrariaLauncher.Commons.EventBusRabbitMQ.csproj", "{D313F579-3FC6-429C-AB7D-8CA650BA5D03}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TerrariaLauncher.TShockPlugins.GameCoordinatorAgent", "TerrariaLauncher.TShockPlugins.GameCoordinatorAgent\TerrariaLauncher.TShockPlugins.GameCoordinatorAgent.csproj", "{05D17569-A86E-4026-B1FD-40CE03B52DDC}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerrariaLauncher.TShockPlugins.DebugDummy", "TerrariaLauncher.TShockPlugins.DebugDummy\TerrariaLauncher.TShockPlugins.DebugDummy.csproj", "{9EB84F04-AFD3-450A-894E-E9337880D6BB}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerrariaLauncher.InstancePlugins.Commons", "TerrariaLauncher.InstancePlugins.Commons\TerrariaLauncher.InstancePlugins.Commons.csproj", "{0F6E3444-D0C8-448F-BCA8-DEF4E53FBD88}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TerrariaLauncher.TShockPlugins.TradingSystemAgent", "TerrariaLauncher.TShockPlugins.TradingSystemAgent\TerrariaLauncher.TShockPlugins.TradingSystemAgent.csproj", "{C394EFFA-0894-4E51-8EEB-8CE6C7FF0828}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -17,22 +29,34 @@ Global
 		Release|Any CPU = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(ProjectConfigurationPlatforms) = postSolution
-		{FFA30EB4-FF95-47AA-ACA2-2AAF63FEFFA4}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{FFA30EB4-FF95-47AA-ACA2-2AAF63FEFFA4}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{FFA30EB4-FF95-47AA-ACA2-2AAF63FEFFA4}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{FFA30EB4-FF95-47AA-ACA2-2AAF63FEFFA4}.Release|Any CPU.Build.0 = Release|Any CPU
-		{2C8B889E-1D2B-4AEF-9BA4-CCCFB25C7A2E}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{2C8B889E-1D2B-4AEF-9BA4-CCCFB25C7A2E}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{2C8B889E-1D2B-4AEF-9BA4-CCCFB25C7A2E}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{2C8B889E-1D2B-4AEF-9BA4-CCCFB25C7A2E}.Release|Any CPU.Build.0 = Release|Any CPU
-		{BA8242E3-4649-45B6-AAA2-D677EA151EB9}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
-		{BA8242E3-4649-45B6-AAA2-D677EA151EB9}.Debug|Any CPU.Build.0 = Debug|Any CPU
-		{BA8242E3-4649-45B6-AAA2-D677EA151EB9}.Release|Any CPU.ActiveCfg = Release|Any CPU
-		{BA8242E3-4649-45B6-AAA2-D677EA151EB9}.Release|Any CPU.Build.0 = Release|Any CPU
 		{A8C0FFA3-4A6A-42C5-A3A7-4CBDF106E539}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
 		{A8C0FFA3-4A6A-42C5-A3A7-4CBDF106E539}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A8C0FFA3-4A6A-42C5-A3A7-4CBDF106E539}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A8C0FFA3-4A6A-42C5-A3A7-4CBDF106E539}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2C2EACD5-853A-4922-91CA-DAC9D415FC5B}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2C2EACD5-853A-4922-91CA-DAC9D415FC5B}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2C2EACD5-853A-4922-91CA-DAC9D415FC5B}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2C2EACD5-853A-4922-91CA-DAC9D415FC5B}.Release|Any CPU.Build.0 = Release|Any CPU
+		{D313F579-3FC6-429C-AB7D-8CA650BA5D03}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{D313F579-3FC6-429C-AB7D-8CA650BA5D03}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{D313F579-3FC6-429C-AB7D-8CA650BA5D03}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{D313F579-3FC6-429C-AB7D-8CA650BA5D03}.Release|Any CPU.Build.0 = Release|Any CPU
+		{05D17569-A86E-4026-B1FD-40CE03B52DDC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{05D17569-A86E-4026-B1FD-40CE03B52DDC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{05D17569-A86E-4026-B1FD-40CE03B52DDC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{05D17569-A86E-4026-B1FD-40CE03B52DDC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{9EB84F04-AFD3-450A-894E-E9337880D6BB}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{9EB84F04-AFD3-450A-894E-E9337880D6BB}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{9EB84F04-AFD3-450A-894E-E9337880D6BB}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{9EB84F04-AFD3-450A-894E-E9337880D6BB}.Release|Any CPU.Build.0 = Release|Any CPU
+		{0F6E3444-D0C8-448F-BCA8-DEF4E53FBD88}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{0F6E3444-D0C8-448F-BCA8-DEF4E53FBD88}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{0F6E3444-D0C8-448F-BCA8-DEF4E53FBD88}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{0F6E3444-D0C8-448F-BCA8-DEF4E53FBD88}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C394EFFA-0894-4E51-8EEB-8CE6C7FF0828}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C394EFFA-0894-4E51-8EEB-8CE6C7FF0828}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C394EFFA-0894-4E51-8EEB-8CE6C7FF0828}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C394EFFA-0894-4E51-8EEB-8CE6C7FF0828}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

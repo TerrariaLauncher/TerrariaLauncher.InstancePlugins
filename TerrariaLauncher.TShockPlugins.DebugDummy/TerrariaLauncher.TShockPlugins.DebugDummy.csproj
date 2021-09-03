@@ -4,15 +4,14 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{FFA30EB4-FF95-47AA-ACA2-2AAF63FEFFA4}</ProjectGuid>
+    <ProjectGuid>{9EB84F04-AFD3-450A-894E-E9337880D6BB}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>TerrariaLauncher.TShockPlugins.InGameEconomy</RootNamespace>
-    <AssemblyName>TerrariaLauncher.TShockPlugins.InGameEconomy</AssemblyName>
+    <RootNamespace>TerrariaLauncher.TShockPlugins.DebugDummy</RootNamespace>
+    <AssemblyName>TerrariaLauncher.TShockPlugins.DebugDummy</AssemblyName>
     <TargetFrameworkVersion>v4.8</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
     <Deterministic>true</Deterministic>
-    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -54,35 +53,14 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Database\Entities\BankAccount.cs" />
-    <Compile Include="Database\Entities\Currency.cs" />
-    <Compile Include="Database\Entities\Transaction.cs" />
-    <Compile Include="Database\Repositories\TransactionRepository.cs" />
-    <Compile Include="InGameEconomy.cs" />
+    <Compile Include="DebugDummy.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Bcl.AsyncInterfaces">
-      <Version>5.0.0</Version>
-    </PackageReference>
-    <PackageReference Include="System.Threading.Tasks.Dataflow">
-      <Version>5.0.0</Version>
-    </PackageReference>
-  </ItemGroup>
-  <ItemGroup>
-    <ProjectReference Include="..\..\TerrariaLauncher.Commons.Base\TerrariaLauncher.Commons.Base.csproj">
-      <Project>{a8c0ffa3-4a6a-42c5-a3a7-4cbdf106e539}</Project>
-      <Name>TerrariaLauncher.Commons.Base</Name>
-    </ProjectReference>
-    <ProjectReference Include="..\TerrariaLauncher.Commons\TerrariaLauncher.Commons.csproj">
-      <Project>{ba8242e3-4649-45b6-aaa2-d677ea151eb9}</Project>
-      <Name>TerrariaLauncher.Commons</Name>
+    <ProjectReference Include="..\TerrariaLauncher.TShockPlugins.GameCoordinatorAgent\TerrariaLauncher.TShockPlugins.GameCoordinatorAgent.csproj">
+      <Project>{05d17569-a86e-4026-b1fd-40ce03b52ddc}</Project>
+      <Name>TerrariaLauncher.TShockPlugins.GameCoordinatorAgent</Name>
     </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
-  <PropertyGroup>
-    <PostBuildEvent>robocopy $(TargetDir) $(SolutionDir)..\TShockDebug\ServerPlugins\ $(TargetName).*
-IF %25errorlevel%25 LEQ 8 EXIT 0
-</PostBuildEvent>
-  </PropertyGroup>
 </Project>

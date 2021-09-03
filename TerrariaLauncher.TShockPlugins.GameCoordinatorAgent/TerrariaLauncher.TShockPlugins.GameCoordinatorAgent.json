@@ -1,0 +1,13 @@
+{
+  "Consul": {
+    "Host": "localhost",
+    "Port": 8500,
+    "UseTls": false
+  },
+  "ConsulConfigurationProvider": {
+    "Keys": {
+      "0": "Configurations/TerrariaLauncher.TShockPlugins.GameCoordinatorAgent",
+      "1": "Configurations/TerrariaLauncher.TShockPlugins.GameCoordinatorAgent/1"
+    }
+  }
+}
